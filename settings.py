@@ -8,3 +8,7 @@ DROPOUT = 0.1
 
 # Training Settings
 EPOCHS = 1000
+
+Y_VAL = 0.95
+EPS = 0.5
+DECAY_FACTOR = 1 - 0.00001
