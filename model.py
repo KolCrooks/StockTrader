@@ -6,16 +6,21 @@ import dataManager
 
 import numpy as np
 import gym
-from termcolor import colored
+import time
+
+from termcolor import colored, cprint
 
 def createModel(state_space_len: int, action_space_len: int):
-    model = keras.models.Sequential([
-        keras.layers.GRU(settings.GRU_UNITS, input_shape=(None, state_space_len)),
-        keras.layers.Dense(settings.DENSE_UNITS, activation="relu"),
-        keras.layers.Dropout(settings.DROPOUT),
-        keras.layers.Dense(action_space_len, activation="softmax")
-    ], name="Stock_Trader")
-    model.compile(loss="mse", optimizer="adam", metrics=["mae"])
+    try:
+        model = keras.models.load_model('./saves/model.h5')
+    except:
+        model = keras.models.Sequential([
+            keras.layers.GRU(settings.GRU_UNITS, input_shape=(None, state_space_len)),
+            keras.layers.Dense(settings.DENSE_UNITS, activation="relu"),
+            keras.layers.Dropout(settings.DROPOUT),
+            keras.layers.Dense(action_space_len, activation="softmax")
+        ], name="Stock_Trader")
+        model.compile(loss="mse", optimizer="adam", metrics=["mae"])
     model.summary()
     return model
  
@@ -36,7 +41,6 @@ class TradingModel:
             eps *= settings.DECAY_FACTOR
             
             state = env.state()
-            print("Action {} of {} on state: {}".format(colored(i, 'blue'), colored(action_cnt, 'blue'), colored(str(state), 'cyan')))
 
             if np.random.random() < eps:
                 a = np.random.randint(0, dataManager.N_DISCRETE_ACTIONS)
@@ -49,5 +53,11 @@ class TradingModel:
             target_vec = self.model.predict(np.reshape(state, (1, 1, -1)))[0] # get the first prediction epoch
             target_vec[a] = target # change val of target action to be action with greatest reward
             self.model.fit(np.reshape(state, (1, 1, -1)), target_vec.reshape(-1, dataManager.N_DISCRETE_ACTIONS), epochs=1)
+            print("Action {} of {} on state: {}".format(colored(i, 'blue'), colored(action_cnt, 'blue'), colored(str(state), 'cyan')))
+            print("{} - EPS: {}".format(colored(dataManager.actions[a], 'red'), colored(eps, 'magenta')))
             env.render()
+            time.sleep(settings.TRADE_INTERVAL)
+            if i % 60:
+                self.model.reset_metrics()
+                self.model.save('./saves/model.h5')
             r_sum += reward

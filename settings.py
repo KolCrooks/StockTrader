@@ -7,8 +7,11 @@ DENSE_UNITS = 128
 DROPOUT = 0.1
 
 # Training Settings
-EPOCHS = 1000
+EPOCHS = 10000
 
 Y_VAL = 0.95
 EPS = 0.5
-DECAY_FACTOR = 1 - 0.00001
+DECAY_FACTOR = 1 - 0.001
+
+SHARES = 500
+TRADE_INTERVAL = 1 # Time between trades / actions in seconds

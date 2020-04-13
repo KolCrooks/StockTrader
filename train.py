@@ -4,7 +4,7 @@ from termcolor import cprint
 import dataManager
 import settings
 
-SYMBOL = 'AAPL'
+SYMBOL = 'NCLH'
 
 if __name__ == '__main__':
     cprint('========= Training Model =========', 'blue')
