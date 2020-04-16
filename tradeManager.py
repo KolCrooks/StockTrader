@@ -8,4 +8,5 @@ class TradeManager:
     def __init__(self, tdclient: tdameritrade.TDClient):
         self.tdclient = tdclient
     
-    def make
+    def makeTrade(self, symbol: str):
+        self.tdclient.

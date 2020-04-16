@@ -30,8 +30,8 @@ N_DISCRETE_STATES = len(ref_state_cols)
 
 
 class stockEnv(gym.Env):
+    
     __symbol = ""
-
     __last_state = []
     __last_quote = {}
     __buy_price = -1

@@ -47,8 +47,9 @@ class TradingModel:
             else:
                 a = np.argmax(self.model.predict(np.reshape(state, (1, 1, -1))))
 
-            new_state, reward, _, _ = env.step(a)
-
+            new_state, reward, done, _ = env.step(a)
+            if done:
+                return
             target = reward + settings.Y_VAL * np.max(self.model.predict(np.reshape(new_state, (1, 1, -1))))
             target_vec = self.model.predict(np.reshape(state, (1, 1, -1)))[0] # get the first prediction epoch
             target_vec[a] = target # change val of target action to be action with greatest reward
