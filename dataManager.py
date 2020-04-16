@@ -37,6 +37,7 @@ class stockEnv(gym.Env):
     __buy_price = -1
     __net_profit = 0
     __start_price = 0
+    __shares = 0
 
     tdclient: tdameritrade.TDClient
 
@@ -160,13 +161,15 @@ class stockEnv(gym.Env):
                 # Sometimes the reason is that you get logged out of your account so refresh the client to fix the problem
                 self.refresh_tdClient()
 
-
+        # If sell and has share
         if action == 1 and self.__buy_price != -1: 
             # update net profit
-            self.__net_profit += (n_quote['lastPrice'] - self.__buy_price)
+            self.__net_profit += (n_quote['lastPrice'] - self.__buy_price) * self.__shares
             self.__buy_price = -1 # Reset Buy Price
+            self.__shares = 0 # Reset Shares
 
         elif action == 2: # Update Buy price if bought
+            self.__shares += 1
             if self.__buy_price == -1: # Doesn't have any shares if == -1
                 self.__buy_price = n_quote['lastPrice']
                 self.__last_state[5] = 1 # Reset Multiplier
@@ -193,8 +196,6 @@ class stockEnv(gym.Env):
         # Seed the initial Data
         lastQuote = self.tdclient.quote(self.__symbol)[self.__symbol]
 
-        # Set the start price to be the price when the AI is started
-        self.__start_price = lastQuote['lastPrice']
 
         # Wait n sec so that the market value can change
         print(f'Waiting {settings.TRADE_INTERVAL}s to seed the price change...')
@@ -205,22 +206,28 @@ class stockEnv(gym.Env):
         self.__last_state = self.cleanQuoteInstance(lastQuote, newQuote)
         self.__last_quote = newQuote
 
+        # Set the start price to be the price when the AI is started
+        self.__start_price = newQuote['lastPrice']
+
+
         return self.__last_state
     
     def render(self, mode='human'):
         
         # Find the difference in start price and current price
-        price_diff = self.__start_price - self.__last_quote['lastPrice']
+        price_diff = self.__last_quote['lastPrice'] - self.__start_price
 
         # Create data Table
-        headers = ["Symbol"     , "Current P/L"       , "Reward Multiplier" , "Buy Price"     , "Current Price", "Net Profit", "Net Change"]
-        data    = [self.__symbol, f'{float(self.__last_state[4]):.3}', self.__last_state[5], self.__buy_price, self.__last_quote['lastPrice'], f'{float(self.__net_profit*settings.SHARES):.6}', f'{float(price_diff*settings.SHARES):.6}']
+        headers = ["Symbol"     , "Current P/L"       , "Shares" , "Buy Price"     , "Current Price", "Net Profit", "Net Change"]
+        data    = [self.__symbol, f'{float(self.__last_state[4]):.3}', self.__shares * settings.SHARES, self.__buy_price, self.__last_quote['lastPrice'], f'{float(self.__net_profit*settings.SHARES):.6}', f'{float(price_diff*settings.SHARES):.6}']
         table = tabulate([headers, data])
         cprint(table, 'cyan')
 
         # Add seperator
         cprint('================================', 'grey')
         print()
+
+        
 
     def state(self):
         return self.__last_state
