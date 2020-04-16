@@ -59,7 +59,7 @@ class TradingModel:
             print("{} - EPS: {}".format(colored(dataManager.actions[a], 'red'), colored(eps, 'magenta')))
             env.render()
             time.sleep(settings.TRADE_INTERVAL)
-            if i % 60:
+            if settings.SAVE_MODEL and i % 60:
                 self.model.reset_metrics()
                 self.model.save('./saves/model.h5')
             r_sum += reward

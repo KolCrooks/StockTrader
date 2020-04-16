@@ -15,3 +15,5 @@ DECAY_FACTOR = 1
 
 SHARES = 500
 TRADE_INTERVAL = 1 # Time between trades / actions in seconds
+
+SAVE_MODEL = True
