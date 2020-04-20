@@ -17,6 +17,17 @@ from tabulate import tabulate
 
 import settings
 
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib import style
+import csv
+from datetime import datetime
+
+#Graph settings
+style.use('fivethirtyeight')
+fig = plt.figure()
+ax1 = fig.add_subplot(1, 1, 1)
+
 quote_cols = ['52WkHigh', '52WkLow', 'lastPrice', 'volatility']
 
 # Just for reference
@@ -29,6 +40,7 @@ N_DISCRETE_ACTIONS = len(actions)
 N_DISCRETE_STATES = len(ref_state_cols)
 
 
+
 class stockEnv(gym.Env):
     
     __symbol = ""
@@ -38,6 +50,8 @@ class stockEnv(gym.Env):
     __net_profit = 0
     __start_price = 0
     __shares = 0
+    __graphing_data = {'profit': []}
+    
 
     tdclient: tdameritrade.TDClient
 
@@ -227,7 +241,23 @@ class stockEnv(gym.Env):
         cprint('================================', 'grey')
         print()
 
+        #Saving data for the graph
+        textProfit = open("data/"+self.__symbol+ datetime.today().strftime('_%m-%d-%Y')+".csv","a")
+        with open("data/"+self.__symbol+ datetime.today().strftime('_%m-%d-%Y')+".csv","r") as csv_file:
+            if csv_file.readline() == "":
+                textProfit.write( 'Current P/L' + ',' +'Shares'+ ',' + 'Buy Price' + ',' + 'Current Price'+ ',' +'Net Profit' + ',' + 'Net Change' + ',' +'\n')
+        textProfit.write(str(self.__last_state[4]) + ','  +str(self.__shares * settings.SHARES) + ',' + str(self.__buy_price) + ',' + str(self.__last_quote['lastPrice'])+',' +str(self.__net_profit*settings.SHARES)+ ',' +str(price_diff*settings.SHARES) +'\n')
+        textProfit.close()
+        self.__graphing_data['profit'].append(self.__net_profit*settings.SHARES)
+        self.animate()
+        plt.show()
         
+        
+    def animate(self):
+        ax1.clear()
+        ax1.plot(self.__graphing_data['profit'])
+
+   
 
     def state(self):
         return self.__last_state

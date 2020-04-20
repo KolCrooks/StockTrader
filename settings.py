@@ -7,7 +7,7 @@ DENSE_UNITS = 128
 DROPOUT = 0.1
 
 # Training Settings
-EPOCHS = 10000
+EPOCHS = 100000
 
 Y_VAL = 0.95
 EPS = 0.05
