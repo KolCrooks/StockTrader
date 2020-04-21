@@ -136,9 +136,9 @@ class stockEnv(gym.Env):
         """
 
         # TODO Change this to something smarter
-
+        hold_reward = -0.1
         if action == 0: # HOLD
-            return (1, -0.5)
+            return (1, hold_reward)
         elif action == 1: # SELL
             # Cacluate Base R
             r = state[4] * state[5] * 2
@@ -146,16 +146,16 @@ class stockEnv(gym.Env):
             # Discout selling at 0 gain multiplier
             if state[5] == 0:
                 # Equal to HOLD reward
-                r = -0.5
-            elif r > 0:
-                # We want the AI to really like profits
+                r = hold_reward
+            elif r < 0:
+                # Losing money is really bad
                 r *= 5
 
             return (0, r) # P/L Percent * Gain Multiplier
         else: # BUY
             # Buying again and again is bad because it increases risk
             # TODO we can probably change this
-            return (2, -0.25); 
+            return (2, 0); 
 
     def step(self, action: int):
         # Calculate the reward and gain multiplier
